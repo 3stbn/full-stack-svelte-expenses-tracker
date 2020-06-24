@@ -4,7 +4,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
 import config from './config';
-import transaction from './api/routes/transaction'
+import { transaction } from './api/routes/transaction'
 
 mongoose
     .connect(config.URI, {
