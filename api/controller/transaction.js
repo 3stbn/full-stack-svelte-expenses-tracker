@@ -6,6 +6,7 @@ const get = async (req, res) => {
         if (!transactions) {
             throw Error('No Transactions!!');
         };
+        console.log(transactions);
         res.status(200).json(transactions);
     } catch(err) {
         console.log({ error: err })
@@ -13,27 +14,29 @@ const get = async (req, res) => {
 };
 
 const add = async (req, res) => {
-    const { value, date } = req.body;
-    const transaction = new Transaction({ value, date });
+    const transaction = new Transaction({ value: req.body.value });
     try {
         const result = await transaction.save();
         if (!result) {
             throw Error('Failed to save the transaction');
         }
+        console.log(result);
         res.status(200).json(result);
     } catch(err) {
         console.log({error: err});
     };
 };
 
-const remove = async (res, req) => {
-    const { id } = res.params
+const remove = async (req, res) => {
+    const { id } = req.params
     try {
         const transaction = await Transaction.find(id);
         if (!transaction) {
             throw Error('No Transaction Found!!');
         };
         const result = await transaction.remove();
+        console.log(result);
+        res.status(200).json(result);
     } catch(err) {
         console.log({error: err});
     };

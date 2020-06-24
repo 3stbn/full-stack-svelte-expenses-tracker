@@ -14,7 +14,9 @@ mongoose
     })
     .then(() => console.log('App is connected to the cluster'))
     .catch(err => console.log(err));
+    
 const app = express();
+app.use(express.json());
 
 app.listen(config.port, () => {
     console.log(`app is running in PORT: ${config.port}`);

@@ -1,0 +1,10 @@
+POST https://localhost:3000/api/transaction HTTP/1.1
+content-type: application/json
+
+{
+    "value": 300
+}
+
+###
+
+GET http://localhost:3000/api/transaction HTTP/1.1
