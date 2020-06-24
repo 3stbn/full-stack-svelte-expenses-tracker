@@ -2,9 +2,13 @@ POST https://localhost:3000/api/transaction HTTP/1.1
 content-type: application/json
 
 {
-    "value": 300
+    "value": 400
 }
 
 ###
 
 GET http://localhost:3000/api/transaction HTTP/1.1
+
+###
+
+DELETE http://localhost:3000/api/transaction/5ef2b04abce8e2a4a0b28671/ HTTP/1.1
