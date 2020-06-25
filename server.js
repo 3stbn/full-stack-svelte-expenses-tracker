@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import morgan from 'morgan';
+import 'dotenv/config.js';
 import config from './config';
 import { schema, rootQuery } from './api/controller/transaction';
 import graphqlHttp from 'express-graphql';

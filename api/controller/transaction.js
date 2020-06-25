@@ -3,37 +3,40 @@ import { buildSchema } from 'graphql';
 
 export const schema = buildSchema(`
     scalar Date
+    
     type Transaction {
-        _id: String!
+        _id: ID!
         value: Int!
-        date: Date!
+        date: Date
     },
 
     type Query {
         transactions: [Transaction]
-        transaction (_id: String!): Transaction
-    }
+        findTransaction( value: Int): Transaction
+        transaction (_id: ID): Transaction
+    },
 
     type Mutation {
-        createTransaction(input: Int!): Transaction
-        deleteTransaction(_id: String!): Transaction
-    }
+        createTransaction(value: Int!): Transaction
+        deleteTransaction(_id: ID!): Transaction
+    },
 `);
 
 export const rootQuery = {
 	transactions: async () => {
 		return await Transaction.find();
 	},
-	transaction: async (args) => {
-		return await Transaction.findById(args._id);
+	findTransaction: async ({ value }) => {
+		return await Transaction.findOne({ value: value });
 	},
-	createTransaction: async ({ input }) => {
-		const transaction = new Transaction({ value: input });
+	transaction: async ({ _id }) => {
+		return await Transaction.findById(_id);
+	},
+	createTransaction: async ({ value }) => {
+		const transaction = new Transaction({ value: value });
 		return await transaction.save();
 	},
 	deleteTransaction: async ({ _id }) => {
-        const result = await Transaction.findByIdAndDelete({ _id: _id });
-        console.log(result);
-        return result;
+		return await Transaction.findByIdAndDelete({ _id: _id });
 	},
 };
