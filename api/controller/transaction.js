@@ -1,5 +1,4 @@
 import Transaction from '../models/Transaction';
-import { Error } from 'mongoose';
 
 async function get(req, res) {
 	try {
