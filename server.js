@@ -27,11 +27,11 @@ app.use(morgan('tiny'));
 app.use(express.json());
 
 app.use(
-	'/graphql',
+	'/api/transaction',
 	graphqlHttp({
 		schema: schema,
 		rootValue: rootQuery,
-		graphiql: true,
+		graphiql: process.env.NODE_ENV === 'development',
 	})
 );
 

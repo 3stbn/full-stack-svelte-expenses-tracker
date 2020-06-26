@@ -2,23 +2,31 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const path = require('path');
 
 const mode = process.env.NODE_ENV || 'development';
+const PORT = process.env.PORT || 3000;
 const prod = mode === 'production';
 
 module.exports = {
 	entry: {
-		bundle: ['./src/main.js']
+		bundle: ['./src/main.js'],
 	},
 	resolve: {
 		alias: {
-			svelte: path.resolve('node_modules', 'svelte')
+			svelte: path.resolve('node_modules', 'svelte'),
 		},
 		extensions: ['.mjs', '.js', '.svelte'],
-		mainFields: ['svelte', 'browser', 'module', 'main']
+		mainFields: ['svelte', 'browser', 'module', 'main'],
 	},
 	output: {
 		path: __dirname + '/public',
 		filename: '[name].js',
-		chunkFilename: '[name].[id].js'
+		chunkFilename: '[name].[id].js',
+	},
+	devServer: {
+		proxy: {
+			'/api': {
+				traget: `http://localhost:${PORT}`,
+			},
+		},
 	},
 	module: {
 		rules: [
@@ -28,9 +36,9 @@ module.exports = {
 					loader: 'svelte-loader',
 					options: {
 						emitCss: true,
-						hotReload: true
-					}
-				}
+						hotReload: true,
+					},
+				},
 			},
 			{
 				test: /\.css$/,
@@ -40,16 +48,16 @@ module.exports = {
 					 * For developing, use 'style-loader' instead.
 					 * */
 					prod ? MiniCssExtractPlugin.loader : 'style-loader',
-					'css-loader'
-				]
-			}
-		]
+					'css-loader',
+				],
+			},
+		],
 	},
 	mode,
 	plugins: [
 		new MiniCssExtractPlugin({
-			filename: '[name].css'
-		})
+			filename: '[name].css',
+		}),
 	],
-	devtool: prod ? false: 'source-map'
+	devtool: prod ? false : 'source-map',
 };
