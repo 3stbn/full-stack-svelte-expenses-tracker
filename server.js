@@ -22,6 +22,7 @@ app.use(cors());
 app.use(morgan('tiny'));
 // to parse JSON object as req.body
 app.use(express.json());
+app.use(express.static('client/public'));
 
 app.listen(config.port, () => {
 	console.log(`app is running in PORT: ${config.port}`);
