@@ -6,7 +6,6 @@ async function get(req, res) {
 		if (!transactions) {
 			throw Error('No Transactions!!');
 		}
-		console.log(transactions);
 		res.status(200).json(transactions);
 	} catch (err) {
 		console.error(err.message);
@@ -21,7 +20,6 @@ async function add(req, res) {
 		if (!result) {
 			throw Error('Failed to save the transaction');
 		}
-		console.log(result);
 		res.status(200).json(result);
 	} catch (err) {
 		console.error(err.message);
@@ -40,7 +38,6 @@ async function remove(req, res) {
 		if (!result) {
 			throw Error('Error deleting transaction');
 		}
-		console.log(result);
 		res.status(200).json(result);
 	} catch (err) {
 		console.error(err.message);
