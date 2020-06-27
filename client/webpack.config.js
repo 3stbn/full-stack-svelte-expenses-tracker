@@ -1,5 +1,6 @@
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const path = require('path');
+require('dotenv').config();
 
 const mode = process.env.NODE_ENV || 'development';
 const PORT = process.env.PORT || 3000;
@@ -24,7 +25,7 @@ module.exports = {
 	devServer: {
 		proxy: {
 			'/api': {
-				traget: `http://localhost:${PORT}`,
+				target: `http://localhost:${PORT}`,
 			},
 		},
 	},

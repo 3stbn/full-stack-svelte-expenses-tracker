@@ -9,51 +9,78 @@
 	$: disable = !input;
 
 	async function deleteTransaction(id) {
-		const response = await fetch(`/api`,{
-			method: 'DELETE',
-			headers: {
-      		'Content-Type': 'application/json'
-    		},
-		});
-		const json = await response.json();
-		const data = await json;
-		if (data._id === id) {
-			transactions = transactions.filter(t => t._id != id);
-		};
-	};
-
-	async function addTransaction() {
-		const transaction = {
-			value: typeOfTranasaction === '+' ? input : input * -1,
-		};
-		const response = await fetch('/api/transaction', {
-			method: 'POST',
-			headers : {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(transaction),
-		});
-		const json = await response.json();
-		const data = await json;
-		transactions = [data, ... transactions];
-		input = 0;
-	};
-
-	onMount( async () => {
-		loading = true;
-		const query = `
-			query Transactions() {
-				transactions() {
+		const query =`
+			mutation DeleteTransaction($_id: ID!) {
+				deleteTransaction(_id: $_id) {
 					_id
 					value
 					date
 				}
 			}
 		`;
-		const response = await fetch(`/api/transaction?query=query%7B%0A%20%20transactions%20%7B%0A%20%20%20%20_id%0A%20%20%20%20date%0A%20%20%20%20value%0A%20%20%7D%0A%7D`);
-		const r = await response.json();
-		const data = await r;
-		transactions = data.data.transactions;
+		const response = await fetch(`/api/transaction`,{
+			method: 'POST',
+			headers: {
+      		'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				query,
+				variables: {
+					_id: id,
+				},
+			}),
+		});
+		const json = await response.json();
+		const { data } = await json;
+		const { _id } = data.deleteTransaction;
+		if (_id === id) {
+			transactions = transactions.filter(t => t._id != id);
+		};
+	};
+
+	async function addTransaction() {
+		const value = typeOfTranasaction === '+' ? input : input * -1;
+		const query =`
+			mutation CreateTransaction($value: Int!) {
+				createTransaction(value: $value) {
+					_id
+					value
+					date
+				}
+			}
+		`;
+		const response = await fetch('/api/transaction', {
+			method: 'POST',
+			headers : {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				query,
+				variables: {
+					value: value,
+				},
+			}),
+		});
+		const json = await response.json();
+		const { data } = await json;
+		transactions = [data.createTransaction, ... transactions];
+		input = 0;
+	};
+
+	onMount( async () => {
+		loading = true;
+		const query = encodeURIComponent(`
+		query {
+			transactions {
+				_id
+				value
+				date
+			}
+		}`);
+		const response = await fetch(`/api/transaction?query=${query}`);
+		const json = await response.json();
+		const { data } = await json;
+		transactions = data.transactions;
 		loading = false;
 	});
 </script>
