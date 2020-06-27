@@ -8,6 +8,26 @@
 
 	$: disable = !input;
 
+	async function passQuery(query, variables) {
+		try {
+			const response = await fetch(`/api/transaction`,{
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					query,
+					variables,
+				}),
+			});
+			const json = await response.json();
+			const { data } = await json;
+			return data;
+		}catch(err) {
+			throw Error('404 Bad request');
+		};
+	};
+
 	async function deleteTransaction(id) {
 		const query =`
 			mutation DeleteTransaction($_id: ID!) {
@@ -18,20 +38,11 @@
 				}
 			}
 		`;
-		const response = await fetch(`/api/transaction`,{
-			method: 'POST',
-			headers: {
-      		'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				query,
-				variables: {
-					_id: id,
-				},
-			}),
-		});
-		const json = await response.json();
-		const { data } = await json;
+		const variables = {
+			_id: id,
+		};
+		const data = await passQuery(query, variables);
+		console.log(data);
 		const { _id } = data.deleteTransaction;
 		if (_id === id) {
 			transactions = transactions.filter(t => t._id != id);
@@ -49,20 +60,10 @@
 				}
 			}
 		`;
-		const response = await fetch('/api/transaction', {
-			method: 'POST',
-			headers : {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				query,
-				variables: {
-					value: value,
-				},
-			}),
-		});
-		const json = await response.json();
-		const { data } = await json;
+		const variables = {
+			value: value,
+		};
+		const data = await passQuery(query,variables);
 		transactions = [data.createTransaction, ... transactions];
 		input = 0;
 	};
