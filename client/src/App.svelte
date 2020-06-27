@@ -1,11 +1,20 @@
 <script>
 	import { onDestroy, onMount} from 'svelte';
+	import { 
+		transactions,
+		sortTransaction,
+		balance,
+		income, 
+		expense
+	} from './stores';
 
+	import Loading from './components/Loading.svelte';
+	import Transaction from './components/Transaction.svelte';
+	import Summary from './components/Summary.svelte';
+	
 	let input = 0;
 	let typeOfTranasaction = '+';
-	let transactions = [];
 	let loading = false;
-
 	$: disable = !input;
 
 	async function passQuery(query, variables) {
@@ -42,10 +51,9 @@
 			_id: id,
 		};
 		const data = await passQuery(query, variables);
-		console.log(data);
 		const { _id } = data.deleteTransaction;
 		if (_id === id) {
-			transactions = transactions.filter(t => t._id != id);
+			$transactions = $transactions.filter(t => t._id != id);
 		};
 	};
 
@@ -64,7 +72,7 @@
 			value: value,
 		};
 		const data = await passQuery(query,variables);
-		transactions = [data.createTransaction, ... transactions];
+		$transactions = [data.createTransaction, ... $transactions];
 		input = 0;
 	};
 
@@ -81,7 +89,7 @@
 		const response = await fetch(`/api/transaction?query=${query}`);
 		const json = await response.json();
 		const { data } = await json;
-		transactions = data.transactions;
+		$transactions = data.transactions;
 		loading = false;
 	});
 </script>
@@ -98,10 +106,20 @@
 		<button disabled={disable} on:click={addTransaction}>Post</button>	
 	</p>
 </div>
+
+{#if loading}
+	<Loading />
+{/if}
+
+{#if $transactions.length < 0}
+	<Summary {$balance}/>
+	<Summary value={$income} mode="{'income'}" /><Summary value={$expense} mode={'expense'}/>
+	{:else if !loading}
+	<div class="">Add your first transaction</div>
+{/if}
+
 <div class="app">
-	{#each transactions as transaction}
-		<div>
-			{transaction.value} <button on:click={() => deleteTransaction(transaction._id)}>x</button>
-		</div>
+	{#each $sortTransaction as transaction (transaction._id)}
+		<Transaction {transaction} {deleteTransaction} />
 	{/each}
 </div>
