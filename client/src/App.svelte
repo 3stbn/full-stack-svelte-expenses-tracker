@@ -71,12 +71,12 @@
 	onMount( async () => {
 		loading = true;
 		const query = encodeURIComponent(`
-		query {
-			transactions {
-				_id
-				value
-				date
-			}
+			query {
+				transactions {
+					_id
+					value
+					date
+				}
 		}`);
 		const response = await fetch(`/api/transaction?query=${query}`);
 		const json = await response.json();

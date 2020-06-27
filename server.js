@@ -7,7 +7,6 @@ import config from './config';
 import { schema, rootQuery } from './api/controller/transaction';
 import graphqlHttp from 'express-graphql';
 
-// import { transaction } from './api/routes/transaction';
 
 mongoose
 	.connect(config.URI, {
