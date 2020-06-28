@@ -17,7 +17,7 @@ export const schema = buildSchema(`
     },
 
     type Mutation {
-        createTransaction(value: Int!): Transaction
+        createTransaction(value: Int!, date: Date): Transaction
         deleteTransaction(_id: ID!): Transaction
     },
 `);
@@ -32,8 +32,8 @@ export const rootQuery = {
 	transaction: async ({ _id }) => {
 		return await Transaction.findById(_id);
 	},
-	createTransaction: async ({ value }) => {
-		const transaction = new Transaction({ value: value });
+	createTransaction: async ({ value, date }) => {
+		const transaction = new Transaction({ value: value, date: date });
 		return await transaction.save();
 	},
 	deleteTransaction: async ({ _id }) => {

@@ -12,22 +12,18 @@
 	import Transaction from './components/Transaction.svelte';
 	import Summary from './components/Summary.svelte';
 	
-	let input = 0;
+	let input;
 	let typeOfTranasaction = '+';
 	let loading = false;
 	$: disable = !input;
 
-	async function passQuery(query, variables) {
+	async function passQuery(query) {
 		try {
-			const response = await fetch(`/api/transaction`,{
+			const response = await fetch(`/api/transaction?query=${query}`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({
-					query,
-					variables,
-				}),
 			});
 			const json = await response.json();
 			const { data } = await json;
@@ -37,43 +33,37 @@
 		};
 	};
 
+	async function addTransaction() {
+		const value = typeOfTranasaction === '+' ? input : input * -1;
+		const query = encodeURIComponent(`
+			mutation {
+				createTransaction(value: ${value}, date: ${Date.now()}) {
+					_id
+					date
+					value
+				}
+			}
+		`);
+		const data = await passQuery(query);
+		$transactions = [data.createTransaction, ... $transactions];
+		input = null;
+	};
+
 	async function deleteTransaction(id) {
-		const query =`
-			mutation DeleteTransaction($_id: ID!) {
-				deleteTransaction(_id: $_id) {
+		const query = encodeURIComponent(`
+			mutation {
+				deleteTransaction(_id: "${id}") {
 					_id
 					value
 					date
 				}
 			}
-		`;
-		const variables = {
-			_id: id,
-		};
-		const data = await passQuery(query, variables);
+		`);
+		const data = await passQuery(query);
 		const { _id } = data.deleteTransaction;
 		if (_id === id) {
 			$transactions = $transactions.filter(t => t._id != id);
 		};
-	};
-
-	async function addTransaction() {
-		const value = typeOfTranasaction === '+' ? input : input * -1;
-		const query =`
-			mutation CreateTransaction($value: Int!) {
-				createTransaction(value: $value) {
-					_id
-					value
-					date
-				}
-			}
-		`;
-		const variables = {
-			value: value,
-		};
-		const data = await passQuery(query,variables);
-		$transactions = [data.createTransaction, ... $transactions];
-		input = 0;
 	};
 
 	onMount( async () => {
@@ -86,12 +76,12 @@
 					date
 				}
 		}`);
-		const response = await fetch(`/api/transaction?query=${query}`);
-		const json = await response.json();
-		const { data } = await json;
+		const data = await passQuery(query);
 		$transactions = data.transactions;
 		loading = false;
+		console.log($income, $expense, $sortTransaction, $balance);
 	});
+	
 </script>
 
 <div class="app container">
@@ -111,9 +101,10 @@
 	<Loading />
 {/if}
 
-{#if $transactions.length < 0}
-	<Summary {$balance}/>
-	<Summary value={$income} mode="{'income'}" /><Summary value={$expense} mode={'expense'}/>
+{#if $transactions.length > 0}
+	<Summary value={$balance}/>
+	<Summary mode="income" value={$income} />
+	<Summary mode="expense" value={$expense}/>
 	{:else if !loading}
 	<div class="">Add your first transaction</div>
 {/if}
