@@ -37,7 +37,10 @@
 		const value = typeOfTranasaction === '+' ? input : input * -1;
 		const query = encodeURIComponent(`
 			mutation {
-				createTransaction(value: ${value}, date: ${Date.now()}) {
+				createTransaction(input: {
+					value: ${value}, 
+					date: ${Date.now()}
+				}) {
 					_id
 					date
 					value
@@ -79,38 +82,47 @@
 		const data = await passQuery(query);
 		$transactions = data.transactions;
 		loading = false;
-		console.log($income, $expense, $sortTransaction, $balance);
 	});
 	
 </script>
+<div calss="main">
+	<div class="app container">
+		<p>
+			<span>
+				<select bind:value={typeOfTranasaction}>
+					<option value="+">+</option>
+					<option value="-">-</option>
+				</select>
+			</span>
+			<input type="number" placeholder="Amount" bind:value={input}>
+			<button disabled={disable} on:click={addTransaction}>Post</button>	
+		</p>
+	</div>
 
-<div class="app container">
-	<p>
-		<span>
-			<select bind:value={typeOfTranasaction}>
-				<option value="+">+</option>
-				<option value="-">-</option>
-			</select>
-		</span>
-		<input type="number" placeholder="Amount" bind:value={input}>
-		<button disabled={disable} on:click={addTransaction}>Post</button>	
-	</p>
+	{#if loading}
+		<Loading />
+	{/if}
+
+	{#if $transactions.length > 0}
+		<div class="blance">
+			<Summary value={$balance} />
+		</div>
+		<div calsl="income">
+			<Summary mode="income" value={$income} />
+		</div>
+		<div calsl="income">
+			<Summary mode="expense" value={$expense} /> 
+		</div>
+		{:else if !loading}
+		<div class="">Add your first transaction</div>
+	{/if}
+
+	<div class="app">
+		{#each $sortTransaction as transaction (transaction._id)}
+			<Transaction {transaction} {deleteTransaction} />
+		{/each}
+	</div>
 </div>
-
-{#if loading}
-	<Loading />
-{/if}
-
-{#if $transactions.length > 0}
-	<Summary value={$balance}/>
-	<Summary mode="income" value={$income} />
-	<Summary mode="expense" value={$expense}/>
-	{:else if !loading}
-	<div class="">Add your first transaction</div>
-{/if}
-
-<div class="app">
-	{#each $sortTransaction as transaction (transaction._id)}
-		<Transaction {transaction} {deleteTransaction} />
-	{/each}
-</div>
+<style>
+	
+</style>

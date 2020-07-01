@@ -2,7 +2,12 @@ import Transaction from '../models/Transaction';
 import { buildSchema } from 'graphql';
 
 export const schema = buildSchema(`
-    scalar Date
+	scalar Date
+	
+	input sendTransaction {
+		value: Int!
+		date: Date
+	}
     
     type Transaction {
         _id: ID!
@@ -17,7 +22,7 @@ export const schema = buildSchema(`
     },
 
     type Mutation {
-        createTransaction(value: Int!, date: Date): Transaction
+        createTransaction(input: sendTransaction!): Transaction
         deleteTransaction(_id: ID!): Transaction
     },
 `);
@@ -32,8 +37,8 @@ export const rootQuery = {
 	transaction: async ({ _id }) => {
 		return await Transaction.findById(_id);
 	},
-	createTransaction: async ({ value, date }) => {
-		const transaction = new Transaction({ value: value, date: date });
+	createTransaction: async ({ input }) => {
+		const transaction = new Transaction({ value: input.value, date: input.date });
 		return await transaction.save();
 	},
 	deleteTransaction: async ({ _id }) => {
