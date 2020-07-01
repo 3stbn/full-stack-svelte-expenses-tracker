@@ -4,7 +4,9 @@ import cors from 'cors';
 import morgan from 'morgan';
 import 'dotenv/config.js';
 import config from './config';
-import { transaction } from './api/routes/transaction';
+import { schema, rootQuery } from './api/controller/transaction';
+import graphqlHttp from 'express-graphql';
+import path from 'path';
 
 mongoose
 	.connect(config.URI, {
@@ -24,8 +26,22 @@ app.use(morgan('tiny'));
 app.use(express.json());
 app.use(express.static('client/public'));
 
+app.use(
+	'/api/transaction',
+	graphqlHttp({
+		schema: schema,
+		rootValue: rootQuery,
+		graphiql: process.env.NODE_ENV === 'development',
+	})
+);
+
+if (process.env.NODE_ENV === 'production') {
+	app.use(express.static('client/public'))
+	app.get('*', (req, res) => {
+		res.sendFile(path.resolve(__dirname, 'client', 'public', 'index.html'));
+	});
+};
+
 app.listen(config.port, () => {
 	console.log(`app is running in PORT: ${config.port}`);
 });
-
-app.use('/api/transaction', transaction);
