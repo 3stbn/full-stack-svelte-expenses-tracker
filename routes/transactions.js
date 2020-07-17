@@ -33,7 +33,7 @@ router.post('/', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     const { id } = req.params
     try {
-        const transaction = Transaction.findById(id)
+        const transaction = await Transaction.findById(id)
         if (!transaction) {
             throw new Error('No transaction was found')
         }
