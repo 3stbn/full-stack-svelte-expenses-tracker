@@ -1,96 +1,58 @@
 <script>
-  import axios from "axios";
-  import Transaction from "./components/Transaction.svelte";
-  import SummaryCard from "./components/SummaryCard.svelte";
+  import Router, { wrap, push } from "svelte-spa-router";
+  import Home from "./pages/Home.svelte";
+  import Dashboard from "./pages/Dashboard.svelte";
+  import Signup from "./pages/Signup.svelte";
+  import Login from "./pages/Login.svelte";
+  import Prolife from "./pages/Profile.svelte";
+  import Navbar from "./components/Navbar.svelte";
   import Loading from "./components/Loading.svelte";
   import { onMount } from "svelte";
-  import {
-    transactions,
-    sortedTransactions,
-    income,
-    expenses,
-    balance
-  } from "./stores";
+  import axios from "axios";
+  import { user } from "./stores";
 
-  let input = 0;
-  let typeOfTransaction = "+";
-  let loading = false;
-
-  $: disabled = !input;
+  let loading = true;
 
   onMount(async () => {
-    loading = true;
-    const { data } = await axios.get("/api/transactions");
-    $transactions = data;
+    const { data } = await axios.get("api/auth/user");
+    $user = data.user;
     loading = false;
   });
 
-  async function addTransaction() {
-    const transaction = {
-      date: new Date().getTime(),
-      value: typeOfTransaction === "+" ? input : input * -1
-    };
-    const response = await axios.post("/api/transactions", transaction);
-    $transactions = [response.data, ...$transactions];
-    input = 0;
-  }
-  async function removeTransaction(id) {
-    const response = await axios.delete("/api/transactions/" + id);
-    if (response.data.id === id) {
-      $transactions = $transactions.filter(t => t._id !== id);
+  const routes = {
+    "/": wrap(Home, { reason: "authenticated" }, () => !$user),
+    "/dashboard": wrap(Dashboard, { reason: "unauthenticated" }, () => $user),
+    "/signup": wrap(Signup, { reason: "authenticated" }, () => !$user),
+    "/login": wrap(Login, { reason: "authenticated" }, () => !$user),
+    "/profile": wrap(Prolife, { reason: "unauthenticated" }, () => $user)
+  };
+
+  function conditionsFailed(event) {
+    const { reason } = event.detail.userData;
+    switch (reason) {
+      case "unauthenticated":
+        return push("/login");
+      case "authenticated":
+        return push("/dashboard");
     }
   }
 </script>
 
 <style>
-  .app {
-    margin: 40px auto;
+  .loading-container {
     max-width: 500px;
+    display: flex;
+    min-height: 100vh;
+    align-content: center;
+    margin: auto;
   }
 </style>
 
-<div class="app container">
-  <div class="field has-addons">
-    <p class="control">
-      <span class="select">
-        <select bind:value={typeOfTransaction}>
-          <option value="+">+</option>
-          <option value="-">-</option>
-        </select>
-      </span>
-    </p>
-    <p class="control is-expanded">
-      <input
-        class="input"
-        type="number"
-        bind:value={input}
-        placeholder="Amount of money" />
-    </p>
-    <p class="control">
-      <button class="button" on:click={addTransaction} {disabled}>Save</button>
-    </p>
-  </div>
-  {#if loading}
+{#if loading}
+  <div class="loading-container">
     <Loading />
-  {/if}
-
-  {#if $transactions.length > 0}
-    <SummaryCard mode="balance" value={$balance} />
-
-    <div class="columns">
-      <div class="column">
-        <SummaryCard mode="income" value={$income} />
-      </div>
-      <div class="column">
-        <SummaryCard mode="expenses" value={$expenses} />
-      </div>
-    </div>
-    <hr />
-  {:else if !loading}
-    <div class="notification">Add your first transaction</div>
-  {/if}
-
-  {#each $sortedTransactions as transaction (transaction._id)}
-    <Transaction {transaction} {removeTransaction} />
-  {/each}
-</div>
+  </div>
+{:else}
+  <Navbar />
+  <Router {routes} on:conditionsFailed={conditionsFailed} />
+{/if}
