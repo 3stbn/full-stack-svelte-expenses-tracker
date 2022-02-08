@@ -1,6 +1,5 @@
 const { Schema, model } = require('mongoose')
 
-const now = new Date().getTime()
 const TransactionSchema = new Schema({
     value: {
         type: Number,
@@ -8,7 +7,7 @@ const TransactionSchema = new Schema({
     },
     date: {
         type: Number,
-        default: now,
+        default: () => Date.now(),
     },
 })
 
